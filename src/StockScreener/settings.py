@@ -21,6 +21,7 @@ from django.core.exceptions import ImproperlyConfigured
 from StockScreener.secrets import get_secret
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ENVIRONMENT = 'local'
 
 SECRET_KEY = get_secret('SECRET_KEY')
 
@@ -40,7 +41,9 @@ PREREQ_APPS = [
 ]
 
 PROJECT_APPS = [
-    # Fill project apps here
+    'common',
+    'currency',
+    'stock',
 ]
 
 INSTALLED_APPS = PREREQ_APPS + PROJECT_APPS
@@ -60,7 +63,7 @@ ROOT_URLCONF = 'StockScreener.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

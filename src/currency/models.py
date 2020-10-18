@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 from typing import Optional
 
@@ -7,7 +8,7 @@ from django.db import models
 class Currency(models.Model):
     help_symbol = 'Symbol to look up the currency on e.g. Google'
 
-    symbol = models.CharField(max_length=16, help_text=help_symbol)
+    symbol = models.CharField(max_length=16, unique=True, help_text=help_symbol)
     name = models.CharField(max_length=64)
 
     rates: models.QuerySet['CurrencyExchangeRate']  # Dynamically added by class CurrencyExchangeRate
@@ -20,12 +21,20 @@ class Currency(models.Model):
         return self.symbol
 
     @property
-    def rate(self) -> Optional[Decimal]:
+    def rate(self) -> Decimal:
         first_rate = self.rates.first()
         if first_rate:
             return first_rate.rate
         else:
             return Decimal(1)
+
+    @property
+    def latest_rate_date(self) -> Optional[date]:
+        first_rate = self.rates.first()
+        if first_rate:
+            return first_rate.date
+        else:
+            return None
 
 
 class CurrencyExchangeRate(models.Model):

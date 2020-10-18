@@ -5,6 +5,7 @@ from currency.models import Currency, CurrencyExchangeRate
 
 class CurrencyExchangeRateInline(admin.TabularInline):
     model = CurrencyExchangeRate
+    extra = 0
 
 
 @admin.register(Currency)

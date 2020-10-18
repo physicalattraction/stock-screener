@@ -1,3 +1,6 @@
+from decimal import Decimal
+from typing import Optional
+
 from django.db import models
 
 
@@ -16,8 +19,13 @@ class Currency(models.Model):
     def __str__(self):
         return self.symbol
 
-    def rate(self) -> 'CurrencyExchangeRate':
-        return self.rates.last()
+    @property
+    def rate(self) -> Optional[Decimal]:
+        first_rate = self.rates.first()
+        if first_rate:
+            return first_rate.rate
+        else:
+            return Decimal(1)
 
 
 class CurrencyExchangeRate(models.Model):
@@ -32,7 +40,8 @@ class CurrencyExchangeRate(models.Model):
     rate = models.DecimalField(max_digits=10, decimal_places=4, help_text=help_rate)
 
     class Meta:
-        ordering = ('currency', 'date')
+        ordering = ('currency', '-date')
+        unique_together = ('currency', 'date')
 
     def __str__(self):
         return f'{self.rate} ({self.date})'

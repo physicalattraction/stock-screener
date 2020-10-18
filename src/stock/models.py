@@ -1,6 +1,10 @@
 from decimal import Decimal
+from typing import Optional
 
 from django.db import models
+
+from common.utils import round_currency
+from currency.models import Currency
 
 
 class Stock(models.Model):
@@ -9,6 +13,7 @@ class Stock(models.Model):
     symbol = models.CharField(unique=True, max_length=16, help_text=help_symbol)
     ticker = models.CharField(max_length=32, blank=True, null=True)
     name = models.CharField(max_length=64)
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
 
     prices: models.QuerySet['StockPrice']
 
@@ -16,8 +21,21 @@ class Stock(models.Model):
         ordering = ('symbol',)
 
     @property
-    def price(self) -> 'StockPrice':
-        return self.prices.last()
+    def price(self) -> Optional[Decimal]:
+        first_price = self.prices.first()
+        if first_price:
+            return first_price.current
+        else:
+            return None
+
+    @property
+    def price_in_euro(self) -> Optional[Decimal]:
+        price = self.price
+        rate = self.currency.rate
+        if price and rate:
+            return round_currency(price * rate)
+        else:
+            return None
 
     def __str__(self):
         return self.symbol
@@ -36,11 +54,17 @@ class StockPrice(models.Model):
     low = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
 
     class Meta:
-        ordering = ('stock', 'date')
+        ordering = ('stock', '-date')
+        unique_together = ('stock', 'date')
 
     @property
     def current(self) -> Decimal:
-        return self.close or self.open
+        """
+        Return the current price of the stock, properly rounded
+        """
+
+        current = self.close or self.open
+        return round_currency(current)
 
     def __str__(self):
         return f'{self.current:0.2f} ({self.date})'

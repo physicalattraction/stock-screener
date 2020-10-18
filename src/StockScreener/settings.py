@@ -44,6 +44,7 @@ PROJECT_APPS = [
     'common',
     'currency',
     'stock',
+    'yahoo',
 ]
 
 INSTALLED_APPS = PREREQ_APPS + PROJECT_APPS
@@ -103,3 +104,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 STATIC_URL = '/static/'
+
+# The maximum number of parameters that may be received via GET or POST before a SuspiciousOperation (TooManyFields)
+# is raised. Default = 1000, setting this to None disables this check. Rationale: There can be many stock prices for
+# a stock in the admin panel, and you still want to hit Save then
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
